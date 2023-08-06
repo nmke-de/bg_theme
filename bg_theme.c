@@ -65,6 +65,8 @@ int main(int argc, char **argv) {
 	char *switchfile = getenv("SWITCH");
 	if (switchfile == NULL)
 		switchfile = switchfile_default;
+	logln("Audio: ", audiofile);
+	logln("PIDfile: ", pidfile);
 	logln("Read switchfile ", switchfile, "...");
 	char buffer;
 	int fd = open(switchfile, 0);
@@ -74,6 +76,7 @@ int main(int argc, char **argv) {
 	close(fd);
 	switch (buffer) {
 		case '0':
+			logln("Read '0' from switchfile. Proceeding to kill mpv...");
 			fd = open(switchfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 			write(fd, "1", 1);
 			close(fd);
@@ -87,8 +90,11 @@ int main(int argc, char **argv) {
 				break;
 			pid_from_file[rl] = 0;
 			kill(atoi(pid_from_file), SIGTERM);
+			unlink(pidfile);
 			break;
 		case '1':
+		default:
+			logln("Read '1' from switchfile. Proceeding to start mpv...");
 			fd = open(switchfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 			write(fd, "0", 1);
 			close(fd);
@@ -99,15 +105,15 @@ int main(int argc, char **argv) {
 				char *pid_string = itoa(getpid(), 10);
 				write(fd, pid_string, strlen(pid_string));
 				close(fd);
+				logln("New PID: ", pid_string);
 				execvp("mpv", cargs("mpv", "--no-terminal", "--loop", audiofile, NULL));
 				// Should never happen
+				logln("Failed to start mpv.");
 				_exit(192);
 			} else if (child < 0) {
+				logln("Failed to start mpv.");
 				return 192;
 			}
 			break;
-		default:
-			// idk
-			return 193;
 	}
 }
