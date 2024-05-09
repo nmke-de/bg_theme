@@ -4,10 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 
-// To be configured
-char *audiofile_default = ".local/share/tinywm/start1-jt.ogg";
-char *pidfile_default = ".local/share/tinywm/bg_theme.pid";
-char *switchfile_default = ".local/share/tinywm/bg_theme";
+#include "config.h"
 
 #ifdef DEBUG
 #include <alloca.h>

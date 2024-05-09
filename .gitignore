@@ -1,2 +1,3 @@
 bg_theme
 config.h
+*.o
