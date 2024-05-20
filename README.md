@@ -11,7 +11,7 @@ To give your desktop a gimmicky background theme.
 - A C compiler
 - Libc
 - [mpv](https://mpv.io)
-- You own background theme audio file
+- Your own background theme audio file
 
 ## Build
 
