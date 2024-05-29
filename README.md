@@ -24,4 +24,4 @@ Type `bg_theme` without arguments to toggle whether the background theme is play
 The program behaviour can be influenced by setting the following environment variables:
 
 - `BG_THEME` can point to an alternative audio file to be played.
-- `SWITCH` and `PIDFILE` can be used to to store files which manage the state of the program at a different location.
+- `PIDFILE` can be used to to store files which manage the state of the program at a different location.
