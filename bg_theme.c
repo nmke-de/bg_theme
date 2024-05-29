@@ -59,29 +59,16 @@ int main(int argc, char **argv) {
 	char *pidfile = getenv("PIDFILE");
 	if (pidfile == NULL)
 		pidfile = pidfile_default;
-	char *switchfile = getenv("SWITCH");
-	if (switchfile == NULL)
-		switchfile = switchfile_default;
 	logln("Audio: ", audiofile);
 	logln("PIDfile: ", pidfile);
-	logln("Read switchfile ", switchfile, "...");
-	char buffer;
-	int fd = open(switchfile, 0);
-	int rl = read(fd, &buffer, 1);
-	if (rl == 0)
-		buffer = '1';
-	close(fd);
-	switch (buffer) {
-		case '0':
-			logln("Read '0' from switchfile. Proceeding to kill mpv...");
-			fd = open(switchfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-			write(fd, "1", 1);
-			close(fd);
-			fd = open(pidfile, 0);
+	switch (access(pidfile, F_OK)) {
+		case 0:
+			logln("PIDfile exists. Proceeding to kill mpv...");
+			int fd = open(pidfile, 0);
 			if (fd < 0)
 				break;
 			char pid_from_file[21];
-			rl = read(fd, pid_from_file, 21);
+			int rl = read(fd, pid_from_file, 21);
 			close(fd);
 			if (rl == 0)
 				break;
@@ -89,20 +76,12 @@ int main(int argc, char **argv) {
 			kill(atoi(pid_from_file), SIGTERM);
 			unlink(pidfile);
 			break;
-		case '1':
+		case -1:
 		default:
-			logln("Read '1' from switchfile. Proceeding to start mpv...");
-			fd = open(switchfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-			write(fd, "0", 1);
-			close(fd);
+			logln("PIDfile does not exist. Proceeding to start mpv...");
 			// TODO pidfile
 			pid_t child = fork();
 			if (child == 0) {
-				fd = open(pidfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-				char *pid_string = itoa(getpid(), 10);
-				write(fd, pid_string, strlen(pid_string));
-				close(fd);
-				logln("New PID: ", pid_string);
 				execvp("mpv", cargs("mpv", "--no-terminal", "--loop", audiofile, NULL));
 				// Should never happen
 				logln("Failed to start mpv.");
@@ -110,6 +89,13 @@ int main(int argc, char **argv) {
 			} else if (child < 0) {
 				logln("Failed to start mpv.");
 				return 192;
+			} else {
+				int fd = open(pidfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+				char *pid_string = itoa(child, 10);
+				write(fd, pid_string, strlen(pid_string));
+				close(fd);
+				logln("New PID: ", pid_string);
+
 			}
 			break;
 	}
