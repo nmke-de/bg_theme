@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
 			// TODO pidfile
 			pid_t child = fork();
 			if (child == 0) {
-				execvp("mpv", cargs("mpv", "--no-terminal", "--loop", audiofile, NULL));
+				execvp("mpv", cargs("mpv", "--vo=null", "--no-terminal", "--loop", audiofile, NULL));
 				// Should never happen
 				logln("Failed to start mpv.");
 				_exit(192);
